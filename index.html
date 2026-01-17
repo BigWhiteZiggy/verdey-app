@@ -5,30 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verdey - Sports Betting Verification</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState } = React;
-    const { Home, BarChart3, Users, User, Plus, Shield, Menu, X, Trophy, CheckCircle, XCircle, Clock, Camera, ChevronLeft, ChevronRight } = lucide;
-
-    const Icon = ({ icon, ...props }) => {
-      const IconComponent = icon;
-      return React.createElement(IconComponent, props);
-    };
+  <script type="module">
+    import React, { useState } from 'https://cdn.skypack.dev/react@18';
+    import ReactDOM from 'https://cdn.skypack.dev/react-dom@18';
+    import { Home, BarChart3, Users, User, Plus, Shield, Menu, X, CheckCircle, XCircle, Clock, Camera } from 'https://cdn.skypack.dev/lucide-react';
 
     function App() {
-      const [currentPage, setCurrentPage] = useState('dashboard');
-      const [isAuthenticated, setIsAuthenticated] = useState(false);
-      const [sidebarOpen, setSidebarOpen] = useState(true);
-      const [profileTab, setProfileTab] = useState('stats');
+      const [currentPage, setCurrentPage] = React.useState('dashboard');
+      const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+      const [sidebarOpen, setSidebarOpen] = React.useState(true);
       
-      const [user, setUser] = useState({
+      const [user, setUser] = React.useState({
         name: 'Alex Morgan',
         avatar: '👤',
         totalProfit: 2847.50,
@@ -38,7 +29,7 @@
         onLeaderboard: true
       });
 
-      const [bets, setBets] = useState([
+      const [bets, setBets] = React.useState([
         { id: 1, game: 'Lakers vs Warriors', amount: 100, odds: 2.1, result: 'win', profit: 110, date: '2026-01-15', sportsbook: 'FanDuel' },
         { id: 2, game: 'Chiefs vs Bills', amount: 200, odds: 1.85, result: 'loss', profit: -200, date: '2026-01-14', sportsbook: 'DraftKings' },
         { id: 3, game: 'Celtics vs Heat', amount: 150, odds: 1.95, result: 'win', profit: 142.5, date: '2026-01-13', sportsbook: 'FanDuel' },
@@ -46,9 +37,8 @@
         { id: 5, game: 'Knicks vs Nets', amount: 75, odds: 1.75, result: 'win', profit: 56.25, date: '2026-01-12', sportsbook: 'DraftKings' }
       ]);
 
-      const [newBet, setNewBet] = useState({ game: '', amount: '', odds: '', sportsbook: '', date: '' });
-      const [verificationResult, setVerificationResult] = useState(null);
-      const [uploadedImage, setUploadedImage] = useState(null);
+      const [newBet, setNewBet] = React.useState({ game: '', amount: '', odds: '', sportsbook: '', date: '' });
+      const [uploadedImage, setUploadedImage] = React.useState(null);
 
       const dailyProfits = [
         { day: 'Mon', profit: 150 },
@@ -76,7 +66,7 @@
                 body: JSON.stringify({ image: base64Image, filename: file.name })
               });
 
-              if (!response.ok) throw new Error('Backend processing failed');
+              if (!response.ok) throw new Error('Backend failed');
               const data = await response.json();
               
               setNewBet({
@@ -87,9 +77,9 @@
                 date: data.date || new Date().toISOString().split('T')[0]
               });
               
-              alert('✓ Veryfi OCR Complete! Please review extracted details.');
+              alert('✓ Veryfi extracted bet details!');
             } catch (error) {
-              alert('Error processing bet slip. Please try again.');
+              alert('Error processing slip. Try again.');
             }
           };
           reader.readAsDataURL(file);
@@ -105,255 +95,167 @@
       };
 
       if (!isAuthenticated) {
-        return (
-          <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-            <div className="bg-gray-800 rounded-lg p-8 w-full max-w-md shadow-2xl">
-              <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-green-500 mb-2">Verdey</h1>
-                <p className="text-gray-400">Verify. Track. Win.</p>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-300 mb-2 text-sm">Email</label>
-                  <input type="email" className="w-full bg-gray-700 text-white rounded-lg px-4 py-3" placeholder="you@example.com" />
-                </div>
-                <div>
-                  <label className="block text-gray-300 mb-2 text-sm">Password</label>
-                  <input type="password" className="w-full bg-gray-700 text-white rounded-lg px-4 py-3" placeholder="••••••••" />
-                </div>
-                <button onClick={() => setIsAuthenticated(true)} className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg px-4 py-3">Log In</button>
-              </div>
-            </div>
-          </div>
+        return React.createElement('div', { className: 'min-h-screen bg-gray-900 flex items-center justify-center p-4' },
+          React.createElement('div', { className: 'bg-gray-800 rounded-lg p-8 w-full max-w-md shadow-2xl' },
+            React.createElement('div', { className: 'text-center mb-8' },
+              React.createElement('h1', { className: 'text-4xl font-bold text-green-500 mb-2' }, 'Verdey'),
+              React.createElement('p', { className: 'text-gray-400' }, 'Verify. Track. Win.')
+            ),
+            React.createElement('div', { className: 'space-y-4' },
+              React.createElement('div', null,
+                React.createElement('label', { className: 'block text-gray-300 mb-2 text-sm' }, 'Email'),
+                React.createElement('input', { type: 'email', className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3', placeholder: 'you@example.com' })
+              ),
+              React.createElement('div', null,
+                React.createElement('label', { className: 'block text-gray-300 mb-2 text-sm' }, 'Password'),
+                React.createElement('input', { type: 'password', className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3', placeholder: '••••••••' })
+              ),
+              React.createElement('button', { 
+                onClick: () => setIsAuthenticated(true), 
+                className: 'w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg px-4 py-3' 
+              }, 'Log In')
+            )
+          )
         );
       }
 
       const maxProfit = Math.max(...dailyProfits.map(d => Math.abs(d.profit)));
 
-      return (
-        <div className="min-h-screen bg-gray-900 text-white">
-          <div className={`hidden md:flex fixed left-0 top-0 h-full bg-gray-800 transition-all ${sidebarOpen ? 'w-64' : 'w-20'} flex-col z-30`}>
-            <div className="p-6 flex items-center justify-between">
-              {sidebarOpen && <h1 className="text-2xl font-bold text-green-500">Verdey</h1>}
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400">
-                <Icon icon={sidebarOpen ? X : Menu} size={24} />
-              </button>
-            </div>
-            
-            <nav className="flex-1 px-4">
-              <button onClick={() => setCurrentPage('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'dashboard' ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>
-                <Icon icon={Home} size={20} />
-                {sidebarOpen && <span>Home</span>}
-              </button>
-              <button onClick={() => setCurrentPage('bets')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'bets' ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>
-                <Icon icon={BarChart3} size={20} />
-                {sidebarOpen && <span>Bets</span>}
-              </button>
-              <button onClick={() => setCurrentPage('leaderboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'leaderboard' ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>
-                <Icon icon={Users} size={20} />
-                {sidebarOpen && <span>Leaderboard</span>}
-              </button>
-              <button onClick={() => setCurrentPage('profile')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'profile' ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>
-                <Icon icon={User} size={20} />
-                {sidebarOpen && <span>Profile</span>}
-              </button>
-            </nav>
-
-            <div className="p-4 space-y-2">
-              <button onClick={() => setCurrentPage('addbet')} className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2">
-                <Icon icon={Plus} size={20} />
-                {sidebarOpen && <span>Add Bet</span>}
-              </button>
-              <button onClick={() => setCurrentPage('verify')} className="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2">
-                <Icon icon={Shield} size={20} />
-                {sidebarOpen && <span>Verify Slip</span>}
-              </button>
-            </div>
-          </div>
-
-          <div className={`md:ml-64 ${!sidebarOpen ? 'md:ml-20' : ''} transition-all`}>
-            <div className="md:hidden bg-gray-800 p-4 flex items-center justify-between sticky top-0 z-20">
-              <h1 className="text-2xl font-bold text-green-500">Verdey</h1>
-              <button onClick={() => setCurrentPage('verify')} className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-4 py-2 flex items-center gap-2">
-                <Icon icon={Shield} size={18} />
-                Verify
-              </button>
-            </div>
-
-            <div className="p-4 md:p-8 pb-24 md:pb-8">
-              {currentPage === 'dashboard' && (
-                <div className="space-y-6">
-                  <h2 className="text-3xl font-bold">Dashboard</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-gray-400 text-sm mb-1">Total P/L</p>
-                      <p className={`text-2xl font-bold ${user.totalProfit > 0 ? 'text-green-400' : 'text-red-500'}`}>${user.totalProfit.toFixed(2)}</p>
-                    </div>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-gray-400 text-sm mb-1">ROI</p>
-                      <p className={`text-2xl font-bold ${user.roi > 0 ? 'text-green-400' : 'text-red-500'}`}>{user.roi}%</p>
-                    </div>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-gray-400 text-sm mb-1">Win Rate</p>
-                      <p className="text-2xl font-bold text-white">{user.winRate}%</p>
-                    </div>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-gray-400 text-sm mb-1">Verified</p>
-                      <p className="text-2xl font-bold text-white">{user.verifiedRate}%</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-800 rounded-lg p-6">
-                    <h3 className="text-xl font-semibold mb-4">Daily Profit/Loss</h3>
-                    <div className="flex items-end justify-between h-48 gap-2">
-                      {dailyProfits.map((item, idx) => {
-                        const height = (Math.abs(item.profit) / maxProfit) * 100;
-                        return (
-                          <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                            <div className="flex-1 w-full flex items-end justify-center">
-                              <div className={`w-full rounded-t ${item.profit >= 0 ? 'bg-green-500' : 'bg-red-500'}`} style={{ height: `${height}%` }} />
-                            </div>
-                            <span className="text-xs text-gray-400">{item.day}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-800 rounded-lg p-6">
-                    <h3 className="text-xl font-semibold mb-4">Recent Bets</h3>
-                    <div className="space-y-3">
-                      {bets.slice(0, 5).map(bet => (
-                        <div key={bet.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                          <div className="flex-1">
-                            <p className="font-semibold">{bet.game}</p>
-                            <p className="text-sm text-gray-400">{bet.date}</p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <p className={`font-bold ${bet.result === 'win' ? 'text-green-400' : bet.result === 'loss' ? 'text-red-500' : 'text-yellow-400'}`}>
-                              ${bet.amount}
-                            </p>
-                            <Icon icon={bet.result === 'win' ? CheckCircle : bet.result === 'loss' ? XCircle : Clock} 
-                                  className={bet.result === 'win' ? 'text-green-400' : bet.result === 'loss' ? 'text-red-500' : 'text-yellow-400'} 
-                                  size={20} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentPage === 'bets' && (
-                <div className="space-y-6">
-                  <h2 className="text-3xl font-bold">My Bets</h2>
-                  <div className="space-y-4">
-                    {bets.map(bet => (
-                      <div key={bet.id} className="bg-gray-800 rounded-lg p-6">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold">{bet.game}</h3>
-                            <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-400">
-                              <span>{bet.sportsbook}</span>
-                              <span>{bet.date}</span>
-                              <span>Odds: {bet.odds}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold">${bet.amount}</p>
-                            {bet.result !== 'pending' && (
-                              <p className={`text-lg font-semibold ${bet.result === 'win' ? 'text-green-400' : 'text-red-500'}`}>
-                                {bet.result === 'win' ? '+' : ''}{bet.profit.toFixed(2)}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Icon icon={bet.result === 'win' ? CheckCircle : bet.result === 'loss' ? XCircle : Clock}
-                                  className={bet.result === 'win' ? 'text-green-400' : bet.result === 'loss' ? 'text-red-500' : 'text-yellow-400'}
-                                  size={24} />
-                            <span className={`font-semibold ${bet.result === 'win' ? 'text-green-400' : bet.result === 'loss' ? 'text-red-500' : 'text-yellow-400'}`}>
-                              {bet.result === 'pending' ? 'Pending' : bet.result === 'win' ? 'Win' : 'Loss'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {currentPage === 'addbet' && (
-                <div className="space-y-6 max-w-2xl">
-                  <h2 className="text-3xl font-bold">Add Bet</h2>
-                  <div className="bg-gray-800 rounded-lg p-6">
-                    <div className="mb-6">
-                      <label className="block w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 text-center cursor-pointer">
-                        <div className="flex items-center justify-center gap-2">
-                          <Icon icon={Camera} size={20} />
-                          <span>Upload Bet Slip (Veryfi AI)</span>
-                        </div>
-                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                      </label>
-                      {uploadedImage && <img src={uploadedImage} alt="Uploaded" className="mt-4 rounded-lg max-h-64 mx-auto" />}
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-gray-300 mb-2">Game</label>
-                        <input type="text" value={newBet.game} onChange={(e) => setNewBet({...newBet, game: e.target.value})} 
-                               className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" 
-                               placeholder="e.g., Lakers vs Warriors" />
-                      </div>
-                      <div>
-                        <label className="block text-gray-300 mb-2">Amount ($)</label>
-                        <input type="number" value={newBet.amount} onChange={(e) => setNewBet({...newBet, amount: e.target.value})} 
-                               className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" 
-                               placeholder="100" />
-                      </div>
-                      <div>
-                        <label className="block text-gray-300 mb-2">Odds</label>
-                        <input type="number" step="0.01" value={newBet.odds} onChange={(e) => setNewBet({...newBet, odds: e.target.value})} 
-                               className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" 
-                               placeholder="2.1" />
-                      </div>
-                      <div>
-                        <label className="block text-gray-300 mb-2">Sportsbook</label>
-                        <input type="text" value={newBet.sportsbook} onChange={(e) => setNewBet({...newBet, sportsbook: e.target.value})} 
-                               className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" 
-                               placeholder="FanDuel" />
-                      </div>
-                      <div>
-                        <label className="block text-gray-300 mb-2">Date</label>
-                        <input type="date" value={newBet.date} onChange={(e) => setNewBet({...newBet, date: e.target.value})} 
-                               className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
-                      </div>
-                      <button onClick={handleAddBet} className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg py-3">
-                        Add Bet
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around py-3 z-20">
-              <button onClick={() => setCurrentPage('dashboard')} className={`flex flex-col items-center gap-1 px-4 py-2 ${currentPage === 'dashboard' ? 'text-green-500' : 'text-gray-400'}`}>
-                <Icon icon={Home} size={22} />
-                <span className="text-xs">Home</span>
-              </button>
-              <button onClick={() => setCurrentPage('bets')} className={`flex flex-col items-center gap-1 px-4 py-2 ${currentPage === 'bets' ? 'text-green-500' : 'text-gray-400'}`}>
-                <Icon icon={BarChart3} size={22} />
-                <span className="text-xs">Bets</span>
-              </button>
-            </div>
-          </div>
-        </div>
+      return React.createElement('div', { className: 'min-h-screen bg-gray-900 text-white' },
+        React.createElement('div', { className: `hidden md:flex fixed left-0 top-0 h-full bg-gray-800 ${sidebarOpen ? 'w-64' : 'w-20'} flex-col z-30` },
+          React.createElement('div', { className: 'p-6 flex items-center justify-between' },
+            sidebarOpen && React.createElement('h1', { className: 'text-2xl font-bold text-green-500' }, 'Verdey'),
+            React.createElement('button', { onClick: () => setSidebarOpen(!sidebarOpen), className: 'text-gray-400' },
+              React.createElement(sidebarOpen ? X : Menu, { size: 24 })
+            )
+          ),
+          React.createElement('nav', { className: 'flex-1 px-4' },
+            React.createElement('button', { 
+              onClick: () => setCurrentPage('dashboard'), 
+              className: `w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'dashboard' ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-700'}` 
+            },
+              React.createElement(Home, { size: 20 }),
+              sidebarOpen && React.createElement('span', null, 'Home')
+            ),
+            React.createElement('button', { 
+              onClick: () => setCurrentPage('bets'), 
+              className: `w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'bets' ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-700'}` 
+            },
+              React.createElement(BarChart3, { size: 20 }),
+              sidebarOpen && React.createElement('span', null, 'Bets')
+            )
+          ),
+          React.createElement('div', { className: 'p-4 space-y-2' },
+            React.createElement('button', { 
+              onClick: () => setCurrentPage('addbet'), 
+              className: 'w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2' 
+            },
+              React.createElement(Plus, { size: 20 }),
+              sidebarOpen && React.createElement('span', null, 'Add Bet')
+            )
+          )
+        ),
+        React.createElement('div', { className: `md:ml-64 ${!sidebarOpen ? 'md:ml-20' : ''}` },
+          React.createElement('div', { className: 'p-4 md:p-8' },
+            currentPage === 'dashboard' && React.createElement('div', { className: 'space-y-6' },
+              React.createElement('h2', { className: 'text-3xl font-bold' }, 'Dashboard'),
+              React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
+                React.createElement('div', { className: 'bg-gray-800 rounded-lg p-4' },
+                  React.createElement('p', { className: 'text-gray-400 text-sm mb-1' }, 'Total P/L'),
+                  React.createElement('p', { className: `text-2xl font-bold ${user.totalProfit > 0 ? 'text-green-400' : 'text-red-500'}` }, `$${user.totalProfit.toFixed(2)}`)
+                ),
+                React.createElement('div', { className: 'bg-gray-800 rounded-lg p-4' },
+                  React.createElement('p', { className: 'text-gray-400 text-sm mb-1' }, 'ROI'),
+                  React.createElement('p', { className: 'text-2xl font-bold text-green-400' }, `${user.roi}%`)
+                ),
+                React.createElement('div', { className: 'bg-gray-800 rounded-lg p-4' },
+                  React.createElement('p', { className: 'text-gray-400 text-sm mb-1' }, 'Win Rate'),
+                  React.createElement('p', { className: 'text-2xl font-bold text-white' }, `${user.winRate}%`)
+                ),
+                React.createElement('div', { className: 'bg-gray-800 rounded-lg p-4' },
+                  React.createElement('p', { className: 'text-gray-400 text-sm mb-1' }, 'Verified'),
+                  React.createElement('p', { className: 'text-2xl font-bold text-white' }, `${user.verifiedRate}%`)
+                )
+              )
+            ),
+            currentPage === 'bets' && React.createElement('div', { className: 'space-y-6' },
+              React.createElement('h2', { className: 'text-3xl font-bold' }, 'My Bets'),
+              ...bets.map(bet => React.createElement('div', { key: bet.id, className: 'bg-gray-800 rounded-lg p-6' },
+                React.createElement('div', { className: 'flex justify-between items-center' },
+                  React.createElement('div', null,
+                    React.createElement('h3', { className: 'text-lg font-semibold' }, bet.game),
+                    React.createElement('p', { className: 'text-sm text-gray-400' }, `${bet.date} - ${bet.sportsbook}`)
+                  ),
+                  React.createElement('div', { className: 'text-right' },
+                    React.createElement('p', { className: 'text-2xl font-bold' }, `$${bet.amount}`),
+                    React.createElement('p', { className: `font-semibold ${bet.result === 'win' ? 'text-green-400' : bet.result === 'loss' ? 'text-red-500' : 'text-yellow-400'}` },
+                      bet.result === 'pending' ? 'Pending' : bet.result === 'win' ? 'Win' : 'Loss'
+                    )
+                  )
+                )
+              ))
+            ),
+            currentPage === 'addbet' && React.createElement('div', { className: 'space-y-6 max-w-2xl' },
+              React.createElement('h2', { className: 'text-3xl font-bold' }, 'Add Bet'),
+              React.createElement('div', { className: 'bg-gray-800 rounded-lg p-6' },
+                React.createElement('label', { className: 'block w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 text-center cursor-pointer mb-6' },
+                  React.createElement('div', { className: 'flex items-center justify-center gap-2' },
+                    React.createElement(Camera, { size: 20 }),
+                    React.createElement('span', null, 'Upload Bet Slip (Veryfi AI)')
+                  ),
+                  React.createElement('input', { type: 'file', accept: 'image/*', onChange: handleImageUpload, className: 'hidden' })
+                ),
+                uploadedImage && React.createElement('img', { src: uploadedImage, alt: 'Uploaded', className: 'mt-4 rounded-lg max-h-64 mx-auto mb-6' }),
+                React.createElement('div', { className: 'space-y-4' },
+                  React.createElement('input', { 
+                    type: 'text', 
+                    value: newBet.game, 
+                    onChange: (e) => setNewBet({...newBet, game: e.target.value}), 
+                    className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3', 
+                    placeholder: 'Game' 
+                  }),
+                  React.createElement('input', { 
+                    type: 'number', 
+                    value: newBet.amount, 
+                    onChange: (e) => setNewBet({...newBet, amount: e.target.value}), 
+                    className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3', 
+                    placeholder: 'Amount ($)' 
+                  }),
+                  React.createElement('input', { 
+                    type: 'number', 
+                    step: '0.01', 
+                    value: newBet.odds, 
+                    onChange: (e) => setNewBet({...newBet, odds: e.target.value}), 
+                    className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3', 
+                    placeholder: 'Odds' 
+                  }),
+                  React.createElement('input', { 
+                    type: 'text', 
+                    value: newBet.sportsbook, 
+                    onChange: (e) => setNewBet({...newBet, sportsbook: e.target.value}), 
+                    className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3', 
+                    placeholder: 'Sportsbook' 
+                  }),
+                  React.createElement('input', { 
+                    type: 'date', 
+                    value: newBet.date, 
+                    onChange: (e) => setNewBet({...newBet, date: e.target.value}), 
+                    className: 'w-full bg-gray-700 text-white rounded-lg px-4 py-3' 
+                  }),
+                  React.createElement('button', { 
+                    onClick: handleAddBet, 
+                    className: 'w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg py-3' 
+                  }, 'Add Bet')
+                )
+              )
+            )
+          )
+        )
       );
     }
 
-    lucide.createIcons();
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(React.createElement(App));
   </script>
 </body>
 </html>
