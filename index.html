@@ -63,8 +63,23 @@
         { rank: 2, name: 'ProPicks', profit: 9830, verified: 95 },
         { rank: 3, name: 'SharpBettor', profit: 7215, verified: 100 },
         { rank: 4, name: 'Alex Morgan', profit: 2847.50, verified: 92.5 }
-      ];const handleImageUpload = async (e) => {
-        const file = e.target.files[0];
+      ];const handleImageUpload = async (e) => {const handleImageUpload = async (e) => {
+  console.log('=== UPLOAD FUNCTION CALLED ===');
+  const file = e.target.files[0];
+  console.log('File:', file);
+  if (file) {
+    console.log('File exists, creating preview...');
+    setUploadedImage(URL.createObjectURL(file));
+    
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      console.log('FileReader done, preparing to call backend...');
+      const base64Image = reader.result.split(',')[1];
+      console.log('Base64 length:', base64Image.length);
+      
+      try {
+        console.log('CALLING BACKEND NOW...');
+        const response = await fetch('https://verdey-backend.vercel.app/api/extract-bet-slip', {        const file = e.target.files[0];
         if (file) {
           setUploadedImage(URL.createObjectURL(file));
           
