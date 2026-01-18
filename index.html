@@ -63,39 +63,30 @@
         { rank: 2, name: 'ProPicks', profit: 9830, verified: 95 },
         { rank: 3, name: 'SharpBettor', profit: 7215, verified: 100 },
         { rank: 4, name: 'Alex Morgan', profit: 2847.50, verified: 92.5 }
-      ];const handleImageUpload = async (e) => {const handleImageUpload = async (e) => {
-  console.log('=== UPLOAD FUNCTION CALLED ===');
-  const file = e.target.files[0];
-  console.log('File:', file);
-  if (file) {
-    console.log('File exists, creating preview...');
-    setUploadedImage(URL.createObjectURL(file));
-    
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      console.log('FileReader done, preparing to call backend...');
-      const base64Image = reader.result.split(',')[1];
-      console.log('Base64 length:', base64Image.length);
-      
-      try {
-        console.log('CALLING BACKEND NOW...');
-        const response = await fetch('https://verdey-backend.vercel.app/api/extract-bet-slip', {        const file = e.target.files[0];
+      ];const handleImageUpload = async (e) => const handleImageUpload = async (e) => {
+        console.log('UPLOAD TRIGGERED');
+        const file = e.target.files[0];
         if (file) {
+          console.log('File selected:', file.name);
           setUploadedImage(URL.createObjectURL(file));
           
           const reader = new FileReader();
           reader.onloadend = async () => {
+            console.log('Reading file complete');
             const base64Image = reader.result.split(',')[1];
             
             try {
+              console.log('Calling backend...');
               const response = await fetch('https://verdey-backend.vercel.app/api/extract-bet-slip', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: base64Image, filename: file.name })
               });
 
+              console.log('Backend response:', response);
               if (!response.ok) throw new Error('Backend processing failed');
               const data = await response.json();
+              console.log('Data received:', data);
               
               setNewBet({
                 game: data.sportsbook || 'Game from slip',
@@ -107,28 +98,13 @@
               
               alert('✓ Veryfi OCR Complete! Please review the extracted details.');
             } catch (error) {
+              console.error('ERROR:', error);
               alert('Error processing bet slip. Please try again.');
             }
           };
           reader.readAsDataURL(file);
         }
       };
-
-      const handleAddBet = () => {
-        if (newBet.game && newBet.amount && newBet.odds) {
-          setBets([{ 
-            id: bets.length + 1, 
-            ...newBet, 
-            amount: parseFloat(newBet.amount), 
-            odds: parseFloat(newBet.odds), 
-            result: 'pending', 
-            profit: 0 
-          }, ...bets]);
-          setNewBet({ game: '', amount: '', odds: '', sportsbook: '', date: '' });
-          setCurrentPage('bets');
-        }
-      };
-
       const handleVerifySlip = (e) => {
         const file = e.target.files[0];
         if (file) {
