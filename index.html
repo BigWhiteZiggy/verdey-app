@@ -394,8 +394,15 @@
           </div>
         </div>
       );
-    }
-    ReactDOM.render(React.createElement(App), document.getElementById('app'));
-  </script>
+        }
+</script>   <!-- ✅ CLOSE the main component script -->
+
+
+<!-- ✅ React 18 Mount Script -->
+<script type="text/babel">
+  const root = ReactDOM.createRoot(document.getElementById('app'));
+  root.render(<App />);
+</script>
+
 </body>
 </html>
