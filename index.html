@@ -14,7 +14,39 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script type="text/babel">
     const { useState } = React;
-    const Icon = ({ name, size = 20, className = '' }) => {
+    // ---------- Helpers ----------
+const makeReceiptId = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const chunk = (n) => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return `VRD-${chunk(4)}-${chunk(4)}`;
+};
+
+const toISODate = (d = new Date()) => d.toISOString().split("T")[0];
+
+const readFileAsArrayBuffer = (file) =>
+  new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsArrayBuffer(file);
+  });
+
+const sha256Hex = async (data) => {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+};
+
+const saveReceiptLocal = (receipt) => {
+  const key = "verdey_receipts";
+  const current = JSON.parse(localStorage.getItem(key) || "[]");
+  localStorage.setItem(key, JSON.stringify([receipt, ...current]));
+};
+
+const loadReceiptsLocal = () => {
+  const key = "verdey_receipts";
+  return JSON.parse(localStorage.getItem(key) || "[]");
+};    const Icon = ({ name, size = 20, className = '' }) => {
       const ref = React.useRef(null);
       React.useEffect(() => { if (ref.current) lucide.createIcons(); }, [name]);
       return React.createElement('i', { ref, 'data-lucide': name, className, style: { width: size, height: size } });
@@ -34,6 +66,10 @@
       const [newBet, setNewBet] = useState({ game: '', amount: '', odds: '', sportsbook: '', date: '' });
       const [verificationResult, setVerificationResult] = useState(null);
       const [uploadedImage, setUploadedImage] = useState(null);
+      const [receipts, setReceipts] = useState(() => loadReceiptsLocal());
+const [verifyStatus, setVerifyStatus] = useState("idle"); 
+// idle | uploading | verifying | done | error
+const [receipt, setReceipt] = useState(null); 
       const leaderboard = [
         { rank: 1, name: 'BettingKing23', profit: 12450, verified: 98 },
         { rank: 2, name: 'ProPicks', profit: 9830, verified: 95 },
