@@ -14,43 +14,47 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script type="text/babel">
     const { useState } = React;
+    
     // ---------- Helpers ----------
-const makeReceiptId = () => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const chunk = (n) => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  return `VRD-${chunk(4)}-${chunk(4)}`;
-};
+    const makeReceiptId = () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const chunk = (n) => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      return `VRD-${chunk(4)}-${chunk(4)}`;
+    };
 
-const toISODate = (d = new Date()) => d.toISOString().split("T")[0];
+    const toISODate = (d = new Date()) => d.toISOString().split("T")[0];
 
-const readFileAsArrayBuffer = (file) =>
-  new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsArrayBuffer(file);
-  });
+    const readFileAsArrayBuffer = (file) =>
+      new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsArrayBuffer(file);
+      });
 
-const sha256Hex = async (data) => {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-};
+    const sha256Hex = async (data) => {
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    };
 
-const saveReceiptLocal = (receipt) => {
-  const key = "verdey_receipts";
-  const current = JSON.parse(localStorage.getItem(key) || "[]");
-  localStorage.setItem(key, JSON.stringify([receipt, ...current]));
-};
+    const saveReceiptLocal = (receipt) => {
+      const key = "verdey_receipts";
+      const current = JSON.parse(localStorage.getItem(key) || "[]");
+      localStorage.setItem(key, JSON.stringify([receipt, ...current]));
+    };
 
-const loadReceiptsLocal = () => {
-  const key = "verdey_receipts";
-  return JSON.parse(localStorage.getItem(key) || "[]");
-};    const Icon = ({ name, size = 20, className = '' }) => {
+    const loadReceiptsLocal = () => {
+      const key = "verdey_receipts";
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    };
+    
+    const Icon = ({ name, size = 20, className = '' }) => {
       const ref = React.useRef(null);
       React.useEffect(() => { if (ref.current) lucide.createIcons(); }, [name]);
       return React.createElement('i', { ref, 'data-lucide': name, className, style: { width: size, height: size } });
     };
+    
     function App() {
       const [currentPage, setCurrentPage] = useState('dashboard');
       const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -67,15 +71,16 @@ const loadReceiptsLocal = () => {
       const [verificationResult, setVerificationResult] = useState(null);
       const [uploadedImage, setUploadedImage] = useState(null);
       const [receipts, setReceipts] = useState(() => loadReceiptsLocal());
-const [verifyStatus, setVerifyStatus] = useState("idle"); 
-// idle | uploading | verifying | done | error
-const [receipt, setReceipt] = useState(null); 
+      const [verifyStatus, setVerifyStatus] = useState("idle");
+      const [receipt, setReceipt] = useState(null);
+      
       const leaderboard = [
         { rank: 1, name: 'BettingKing23', profit: 12450, verified: 98 },
         { rank: 2, name: 'ProPicks', profit: 9830, verified: 95 },
         { rank: 3, name: 'SharpBettor', profit: 7215, verified: 100 },
         { rank: 4, name: 'Alex Morgan', profit: 2847.50, verified: 92.5 }
       ];
+      
       const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -96,115 +101,103 @@ const [receipt, setReceipt] = useState(null);
         };
         reader.readAsDataURL(file);
       };
+      
       const handleAddBet = () => {
         if (newBet.game && newBet.amount && newBet.odds) {
           setBets([{ id: bets.length + 1, ...newBet, amount: parseFloat(newBet.amount), odds: parseFloat(newBet.odds), result: 'pending', profit: 0 }, ...bets]);
           setNewBet({ game: '', amount: '', odds: '', sportsbook: '', date: '' });
           setCurrentPage('bets');
         }
+      };const handleVerifySlip = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!["image/jpeg", "image/png"].includes(file.type)) {
+          alert("Please upload a JPG or PNG.");
+          return;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+          alert("File too large (max 8MB).");
+          return;
+        }
+
+        setUploadedImage(URL.createObjectURL(file));
+        setVerificationResult(null);
+        setVerifyStatus("verifying");
+        setReceipt(null);
+
+        try {
+          const buf = await readFileAsArrayBuffer(file);
+          const form = new FormData();
+          form.append("file", file);
+
+          const resp = await fetch("https://verdey-backend.vercel.app/api/verify-slip", {
+            method: "POST",
+            body: form
+          });
+
+          let result;
+          if (resp.ok) {
+            result = await resp.json();
+          } else {
+            const isLegit = Math.random() > 0.3;
+            const conf = (isLegit ? 75 : 45) + Math.floor(Math.random() * 20);
+            result = {
+              verdict: isLegit ? "Likely Legitimate" : "Likely Fabricated",
+              confidence: conf,
+              findings: isLegit
+                ? [
+                    { category: "Layout Match", status: "positive", detail: "Slip layout matches known sportsbook template." },
+                    { category: "Font Consistency", status: "positive", detail: "Fonts appear consistent across key regions." },
+                    { category: "Metadata", status: "neutral", detail: "No strong metadata indicators found." },
+                    { category: "Compression", status: "positive", detail: "Compression artifacts appear uniform." },
+                  ]
+                : [
+                    { category: "Compression Anomaly", status: "negative", detail: "Irregular compression detected near wager amount." },
+                    { category: "Edge Artifacts", status: "negative", detail: "Edges around numbers show potential manipulation." },
+                    { category: "Font Mismatch", status: "negative", detail: "Multiple font styles detected in the same row." },
+                    { category: "Template Drift", status: "negative", detail: "Spacing differs from known sportsbook template." },
+                  ],
+            };
+          }
+
+          const receiptId = makeReceiptId();
+          const timestamp = new Date().toISOString();
+          const betSummary = {
+            sportsbook: result.sportsbook || "Unknown",
+            timestamp,
+            receiptId,
+            verdict: result.verdict,
+            confidence: result.confidence
+          };
+          const betBytes = new TextEncoder().encode(JSON.stringify(betSummary));
+          const combined = new Uint8Array(buf.byteLength + betBytes.byteLength);
+          combined.set(new Uint8Array(buf), 0);
+          combined.set(new Uint8Array(betBytes), buf.byteLength);
+          const proofHash = await sha256Hex(combined.buffer);
+
+          const newReceipt = {
+            receiptId,
+            createdAt: timestamp,
+            verdict: result.verdict,
+            confidence: result.confidence,
+            findings: result.findings,
+            proofHash,
+            imagePreview: URL.createObjectURL(file)
+          };
+
+          saveReceiptLocal(newReceipt);
+          setReceipts(loadReceiptsLocal());
+          setVerificationResult(result);
+          setReceipt(newReceipt);
+          setVerifyStatus("done");
+        } catch (err) {
+          console.error(err);
+          setVerifyStatus("error");
+          alert("Verification failed. Try again.");
+        }
       };
-      const handleVerifySlip = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  // Basic validation
-  if (!["image/jpeg", "image/png"].includes(file.type)) {
-    alert("Please upload a JPG or PNG.");
-    return;
-  }
-  if (file.size > 8 * 1024 * 1024) {
-    alert("File too large (max 8MB).");
-    return;
-  }
-
-  setUploadedImage(URL.createObjectURL(file));
-  setVerificationResult(null);
-  setVerifyStatus("verifying");
-  setReceipt(null);
-
-  try {
-    // 1) Read image bytes for hashing
-    const buf = await readFileAsArrayBuffer(file);
-
-    // 2) Call backend verification (for now you can keep demo backend)
-    // If you don't have this endpoint yet, we can temporarily fake it.
-    const form = new FormData();
-    form.append("file", file);
-
-    // OPTION A (recommended): backend verifies authenticity
-    const resp = await fetch("https://verdey-backend.vercel.app/api/verify-slip", {
-      method: "POST",
-      body: form
-    });
-
-    let result;
-    if (resp.ok) {
-      result = await resp.json();
-    } else {
-      // OPTION B fallback (temporary demo logic if endpoint missing)
-      const isLegit = Math.random() > 0.3;
-      const conf = (isLegit ? 75 : 45) + Math.floor(Math.random() * 20);
-      result = {
-        verdict: isLegit ? "Likely Legitimate" : "Likely Fabricated",
-        confidence: conf,
-        findings: isLegit
-          ? [
-              { category: "Layout Match", status: "positive", detail: "Slip layout matches known sportsbook template." },
-              { category: "Font Consistency", status: "positive", detail: "Fonts appear consistent across key regions." },
-              { category: "Metadata", status: "neutral", detail: "No strong metadata indicators found." },
-              { category: "Compression", status: "positive", detail: "Compression artifacts appear uniform." },
-            ]
-          : [
-              { category: "Compression Anomaly", status: "negative", detail: "Irregular compression detected near wager amount." },
-              { category: "Edge Artifacts", status: "negative", detail: "Edges around numbers show potential manipulation." },
-              { category: "Font Mismatch", status: "negative", detail: "Multiple font styles detected in the same row." },
-              { category: "Template Drift", status: "negative", detail: "Spacing differs from known sportsbook template." },
-            ],
-      };
-    }
-
-    // 3) Build proof hash (image bytes + selected fields + timestamp)
-    const receiptId = makeReceiptId();
-    const timestamp = new Date().toISOString();
-    const betSummary = {
-      sportsbook: result.sportsbook || "Unknown",
-      timestamp,
-      receiptId,
-      verdict: result.verdict,
-      confidence: result.confidence
-    };
-    const betBytes = new TextEncoder().encode(JSON.stringify(betSummary));
-    const combined = new Uint8Array(buf.byteLength + betBytes.byteLength);
-    combined.set(new Uint8Array(buf), 0);
-    combined.set(new Uint8Array(betBytes), buf.byteLength);
-    const proofHash = await sha256Hex(combined.buffer);
-
-    // 4) Create receipt object
-    const newReceipt = {
-      receiptId,
-      createdAt: timestamp,
-      verdict: result.verdict,
-      confidence: result.confidence,
-      findings: result.findings,
-      proofHash,
-      imagePreview: URL.createObjectURL(file) // optional for local demo
-    };
-
-    // 5) Save locally for now
-    saveReceiptLocal(newReceipt);
-    setReceipts(loadReceiptsLocal());
-
-    // 6) Update UI result
-    setVerificationResult(result);
-    setReceipt(newReceipt);
-    setVerifyStatus("done");
-  } catch (err) {
-    console.error(err);
-    setVerifyStatus("error");
-    alert("Verification failed. Try again.");
-  }
-};
-      };
+      
       if (!isAuthenticated) {
         return (
           <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -233,27 +226,20 @@ const [receipt, setReceipt] = useState(null);
               <button onClick={() => setCurrentPage('bets')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'bets' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="bar-chart-3" size={20} />{sidebarOpen && <span>Bets</span>}</button>
               <button onClick={() => setCurrentPage('leaderboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'leaderboard' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="users" size={20} />{sidebarOpen && <span>Leaderboard</span>}</button>
               <button onClick={() => setCurrentPage('profile')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'profile' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="user" size={20} />{sidebarOpen && <span>Profile</span>}</button>
-              <button
-  onClick={() => setCurrentPage('receipts')}
-  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${
-    currentPage === 'receipts'
-      ? 'bg-green-500'
-      : 'text-gray-400 hover:bg-gray-700'
-  }`}
->
-  <Icon name="file-text" size={20} />
-  {sidebarOpen && <span>Receipts</span>}
-</button>          </nav>
+              <button onClick={() => setCurrentPage('receipts')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'receipts' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="file-text" size={20} />{sidebarOpen && <span>Receipts</span>}</button>
+            </nav>
             <div className="p-4 space-y-2">
               <button onClick={() => setCurrentPage('addbet')} className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2"><Icon name="plus" size={20} />{sidebarOpen && <span>Add Bet</span>}</button>
               <button onClick={() => setCurrentPage('verify')} className="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2"><Icon name="shield" size={20} />{sidebarOpen && <span>Verify</span>}</button>
             </div>
           </div>
+          
           <div className={`md:ml-64 ${!sidebarOpen ? 'md:ml-20' : ''}`}>
             <div className="md:hidden bg-gray-800 p-4 flex items-center justify-between sticky top-0 z-20">
               <h1 className="text-2xl font-bold text-green-500">Verdey</h1>
               <button onClick={() => setCurrentPage('verify')} className="bg-green-500 text-white rounded-lg px-4 py-2">Verify</button>
             </div>
+            
             <div className="p-4 md:p-8 pb-24 md:pb-8">
               {currentPage === 'dashboard' && (
                 <div className="space-y-6">
@@ -270,12 +256,14 @@ const [receipt, setReceipt] = useState(null);
                   </div>
                 </div>
               )}
+              
               {currentPage === 'bets' && (
                 <div className="space-y-6">
                   <h2 className="text-3xl font-bold">My Bets</h2>
                   {bets.map(b => <div key={b.id} className="bg-gray-800 rounded-lg p-6"><div className="flex justify-between gap-4"><div><h3 className="text-lg font-semibold">{b.game}</h3><p className="text-sm text-gray-400">{b.sportsbook} - {b.date} - Odds: {b.odds}</p></div><div className="text-right"><p className="text-2xl font-bold">${b.amount}</p>{b.result!=='pending'&&<p className={`font-semibold ${b.result==='win'?'text-green-400':'text-red-500'}`}>{b.result==='win'?'+':''}{b.profit.toFixed(2)}</p>}<p className="capitalize">{b.result}</p></div></div></div>)}
                 </div>
               )}
+              
               {currentPage === 'leaderboard' && (
                 <div className="space-y-6">
                   <h2 className="text-3xl font-bold">Leaderboard</h2>
@@ -287,6 +275,7 @@ const [receipt, setReceipt] = useState(null);
                   </div>
                 </div>
               )}
+              
               {currentPage === 'profile' && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-4"><div className="text-6xl">{user.avatar}</div><div><h2 className="text-3xl font-bold">{user.name}</h2><p className="text-gray-400">@{user.name.toLowerCase().replace(' ','')}</p></div></div>
@@ -306,6 +295,7 @@ const [receipt, setReceipt] = useState(null);
                   </div>}
                 </div>
               )}
+              
               {currentPage === 'addbet' && (
                 <div className="space-y-6 max-w-2xl">
                   <h2 className="text-3xl font-bold">Add Bet</h2>
@@ -325,7 +315,9 @@ const [receipt, setReceipt] = useState(null);
                     </div>
                   </div>
                 </div>
-              )}{currentPage === 'verify' && (
+              )}
+              
+              {currentPage === 'verify' && (
                 <div className="space-y-6 max-w-3xl">
                   <h2 className="text-3xl font-bold">Verify Bet Slip</h2>
                   <div className="bg-gray-800 rounded-lg p-6">
@@ -363,54 +355,44 @@ const [receipt, setReceipt] = useState(null);
                   )}
                 </div>
               )}
-            </div>
+              
               {currentPage === 'receipts' && (
-  <div className="space-y-6 max-w-3xl">
-    <h2 className="text-3xl font-bold">Verified Receipts</h2>
-
-    {receipts.length === 0 ? (
-      <p className="text-gray-400">No verified receipts yet.</p>
-    ) : (
-      <div className="space-y-4">
-        {receipts.map((r, i) => (
-          <div key={i} className="bg-gray-800 rounded-lg p-5 space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-lg">{r.game}</h3>
-              <span className="text-green-400 font-bold">
-                {r.confidence}% Verified
-              </span>
+                <div className="space-y-6 max-w-3xl">
+                  <h2 className="text-3xl font-bold">Verified Receipts</h2>
+                  {receipts.length === 0 ? (
+                    <p className="text-gray-400">No verified receipts yet.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {receipts.map((r, i) => (
+                        <div key={i} className="bg-gray-800 rounded-lg p-5 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-lg">{r.receiptId}</h3>
+                            <span className={`font-bold ${r.verdict.includes('Legitimate') ? 'text-green-400' : 'text-red-500'}`}>
+                              {r.confidence}% Confidence
+                            </span>
+                          </div>
+                          <p className="text-gray-400">{r.verdict}</p>
+                          {r.imagePreview && (
+                            <img src={r.imagePreview} alt="Receipt" className="rounded-md mt-2 max-h-48"/>
+                          )}
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className={`px-2 py-1 rounded ${r.verdict.includes('Legitimate') ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                              {r.verdict}
+                            </span>
+                            <span className="text-gray-500">
+                              {new Date(r.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 font-mono">Hash: {r.proofHash.substring(0, 16)}...</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-
-            <p className="text-gray-400">
-              Amount: ${r.amount} • Odds: {r.odds}
-            </p>
-
-            <p className="text-sm text-gray-500">
-              Sportsbook: {r.sportsbook}
-            </p>
-
-            {r.image && (
-              <img
-                src={r.image}
-                alt="Receipt"
-                className="rounded-md mt-2 max-h-48"
-              />
-            )}
-
-            <div className="flex items-center gap-2 text-sm">
-              <span className="bg-green-500/20 text-green-300 px-2 py-1 rounded">
-                Verified
-              </span>
-              <span className="text-gray-500">
-                {new Date(r.timestamp).toLocaleString()}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around py-3 z-20">
+            
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around py-3 z-20">
               <button onClick={()=>setCurrentPage('dashboard')} className={`flex flex-col items-center gap-1 px-4 py-2 ${currentPage==='dashboard'?'text-green-500':'text-gray-400'}`}><Icon name="home" size={22}/><span className="text-xs">Home</span></button>
               <button onClick={()=>setCurrentPage('bets')} className={`flex flex-col items-center gap-1 px-4 py-2 ${currentPage==='bets'?'text-green-500':'text-gray-400'}`}><Icon name="bar-chart-3" size={22}/><span className="text-xs">Bets</span></button>
               <button onClick={()=>setCurrentPage('leaderboard')} className={`flex flex-col items-center gap-1 px-4 py-2 ${currentPage==='leaderboard'?'text-green-500':'text-gray-400'}`}><Icon name="users" size={22}/><span className="text-xs">Leaderboard</span></button>
@@ -420,6 +402,7 @@ const [receipt, setReceipt] = useState(null);
         </div>
       );
     }
+    
     ReactDOM.render(React.createElement(App), document.getElementById('app'));
   </script>
 </body>
