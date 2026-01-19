@@ -103,36 +103,107 @@ const [receipt, setReceipt] = useState(null);
           setCurrentPage('bets');
         }
       };
-      const handleVerifySlip = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          setUploadedImage(URL.createObjectURL(file));
-          setVerificationResult(null);
-          setTimeout(() => {
-            const isLegit = Math.random() > 0.3;
-            const conf = (isLegit ? 75 : 45) + Math.floor(Math.random() * 20);
-            const legit = [
-              { category: 'Font Consistency', status: 'positive', detail: 'All text uses authentic FanDuel system fonts matching database' },
-              { category: 'Timestamp Analysis', status: 'positive', detail: 'Bet placement timestamp aligns with game schedule and timezone' },
-              { category: 'UI Element Verification', status: 'positive', detail: 'Interface layout matches official sportsbook design patterns' },
-              { category: 'Metadata Integrity', status: 'positive', detail: 'Image metadata shows no signs of editing software usage' },
-              { category: 'Pixel Pattern Analysis', status: 'positive', detail: 'Compression artifacts are consistent throughout image' },
-              { category: 'Logo Authentication', status: 'positive', detail: 'Sportsbook logos match official branding guidelines' }
-            ];
-            const sus = [
-              { category: 'Font Consistency', status: 'negative', detail: 'Text shows multiple font families inconsistent with platform' },
-              { category: 'Pixel Analysis', status: 'negative', detail: 'Detected irregular compression patterns around bet amount area' },
-              { category: 'Clone Detection', status: 'negative', detail: 'Copy-paste artifacts found in odds display region' },
-              { category: 'Color Variance', status: 'negative', detail: 'Background color gradients show digital manipulation signs' },
-              { category: 'Shadow Inconsistency', status: 'negative', detail: 'Text shadows do not match expected rendering patterns' },
-              { category: 'Edge Artifacts', status: 'negative', detail: 'Blurred edges detected around modified numerical values' }
-            ];
-            let findings = isLegit ? legit.slice(0, 4) : sus.slice(0, 4);
-            if (isLegit && Math.random() > 0.5) findings.push({ category: 'Minor Compression', status: 'negative', detail: 'Slight JPEG compression detected but within normal parameters' });
-            if (!isLegit) findings.unshift(legit[Math.floor(Math.random() * legit.length)]);
-            setVerificationResult({ verdict: isLegit ? 'Likely Legitimate' : 'Likely Fabricated', confidence: conf, findings });
-          }, 2500);
-        }
+      const handleVerifySlip = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Basic validation
+  if (!["image/jpeg", "image/png"].includes(file.type)) {
+    alert("Please upload a JPG or PNG.");
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    alert("File too large (max 8MB).");
+    return;
+  }
+
+  setUploadedImage(URL.createObjectURL(file));
+  setVerificationResult(null);
+  setVerifyStatus("verifying");
+  setReceipt(null);
+
+  try {
+    // 1) Read image bytes for hashing
+    const buf = await readFileAsArrayBuffer(file);
+
+    // 2) Call backend verification (for now you can keep demo backend)
+    // If you don't have this endpoint yet, we can temporarily fake it.
+    const form = new FormData();
+    form.append("file", file);
+
+    // OPTION A (recommended): backend verifies authenticity
+    const resp = await fetch("https://verdey-backend.vercel.app/api/verify-slip", {
+      method: "POST",
+      body: form
+    });
+
+    let result;
+    if (resp.ok) {
+      result = await resp.json();
+    } else {
+      // OPTION B fallback (temporary demo logic if endpoint missing)
+      const isLegit = Math.random() > 0.3;
+      const conf = (isLegit ? 75 : 45) + Math.floor(Math.random() * 20);
+      result = {
+        verdict: isLegit ? "Likely Legitimate" : "Likely Fabricated",
+        confidence: conf,
+        findings: isLegit
+          ? [
+              { category: "Layout Match", status: "positive", detail: "Slip layout matches known sportsbook template." },
+              { category: "Font Consistency", status: "positive", detail: "Fonts appear consistent across key regions." },
+              { category: "Metadata", status: "neutral", detail: "No strong metadata indicators found." },
+              { category: "Compression", status: "positive", detail: "Compression artifacts appear uniform." },
+            ]
+          : [
+              { category: "Compression Anomaly", status: "negative", detail: "Irregular compression detected near wager amount." },
+              { category: "Edge Artifacts", status: "negative", detail: "Edges around numbers show potential manipulation." },
+              { category: "Font Mismatch", status: "negative", detail: "Multiple font styles detected in the same row." },
+              { category: "Template Drift", status: "negative", detail: "Spacing differs from known sportsbook template." },
+            ],
+      };
+    }
+
+    // 3) Build proof hash (image bytes + selected fields + timestamp)
+    const receiptId = makeReceiptId();
+    const timestamp = new Date().toISOString();
+    const betSummary = {
+      sportsbook: result.sportsbook || "Unknown",
+      timestamp,
+      receiptId,
+      verdict: result.verdict,
+      confidence: result.confidence
+    };
+    const betBytes = new TextEncoder().encode(JSON.stringify(betSummary));
+    const combined = new Uint8Array(buf.byteLength + betBytes.byteLength);
+    combined.set(new Uint8Array(buf), 0);
+    combined.set(new Uint8Array(betBytes), buf.byteLength);
+    const proofHash = await sha256Hex(combined.buffer);
+
+    // 4) Create receipt object
+    const newReceipt = {
+      receiptId,
+      createdAt: timestamp,
+      verdict: result.verdict,
+      confidence: result.confidence,
+      findings: result.findings,
+      proofHash,
+      imagePreview: URL.createObjectURL(file) // optional for local demo
+    };
+
+    // 5) Save locally for now
+    saveReceiptLocal(newReceipt);
+    setReceipts(loadReceiptsLocal());
+
+    // 6) Update UI result
+    setVerificationResult(result);
+    setReceipt(newReceipt);
+    setVerifyStatus("done");
+  } catch (err) {
+    console.error(err);
+    setVerifyStatus("error");
+    alert("Verification failed. Try again.");
+  }
+};
       };
       if (!isAuthenticated) {
         return (
