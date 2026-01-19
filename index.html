@@ -162,7 +162,15 @@ const [receipt, setReceipt] = useState(null);
               <button onClick={() => setCurrentPage('bets')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'bets' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="bar-chart-3" size={20} />{sidebarOpen && <span>Bets</span>}</button>
               <button onClick={() => setCurrentPage('leaderboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'leaderboard' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="users" size={20} />{sidebarOpen && <span>Leaderboard</span>}</button>
               <button onClick={() => setCurrentPage('profile')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${currentPage === 'profile' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'}`}><Icon name="user" size={20} />{sidebarOpen && <span>Profile</span>}</button>
-            </nav>
+              <button
+  onClick={() => setCurrentPage('receipts')}
+  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 ${
+    currentPage === 'receipts' ? 'bg-green-500' : 'text-gray-400 hover:bg-gray-700'
+  }`}
+>
+  <Icon name="file-text" size={20} />
+  {sidebarOpen && <span>Receipts</span>}
+</button>            </nav>
             <div className="p-4 space-y-2">
               <button onClick={() => setCurrentPage('addbet')} className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2"><Icon name="plus" size={20} />{sidebarOpen && <span>Add Bet</span>}</button>
               <button onClick={() => setCurrentPage('verify')} className="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2"><Icon name="shield" size={20} />{sidebarOpen && <span>Verify</span>}</button>
