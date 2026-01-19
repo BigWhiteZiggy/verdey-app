@@ -44,7 +44,7 @@
         const file = e.target.files[0];
         if (!file) return;
         setUploadedImage(URL.createObjectURL(file));
-        setVerificationResult(null);        const reader = new FileReader();
+        const reader = new FileReader();
         reader.onloadend = async () => {
           try {
             const response = await fetch('https://verdey-backend.vercel.app/api/extract-bet-slip', {
@@ -68,12 +68,10 @@
         }
       };
       const handleVerifySlip = (e) => {
-        const handleVerifySlip = (e) => {
         const file = e.target.files[0];
         if (file) {
           setUploadedImage(URL.createObjectURL(file));
-          setVerificationResult(null); // Clear old results
-          
+          setVerificationResult(null);
           setTimeout(() => {
             const isLegit = Math.random() > 0.3;
             const conf = (isLegit ? 75 : 45) + Math.floor(Math.random() * 20);
@@ -100,6 +98,22 @@
           }, 2500);
         }
       };
+      if (!isAuthenticated) {
+        return (
+          <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+            <div className="bg-gray-800 rounded-lg p-8 w-full max-w-md shadow-2xl">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-green-500 mb-2">Verdey</h1>
+                <p className="text-gray-400">Verify. Track. Win.</p>
+              </div>
+              <div className="space-y-4">
+                <div><label className="block text-gray-300 mb-2 text-sm">Email</label><input type="email" className="w-full bg-gray-700 text-white rounded-lg px-4 py-3" placeholder="you@example.com" /></div>
+                <div><label className="block text-gray-300 mb-2 text-sm">Password</label><input type="password" className="w-full bg-gray-700 text-white rounded-lg px-4 py-3" placeholder="••••••••" /></div>
+                <button onClick={() => setIsAuthenticated(true)} className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg px-4 py-3">Log In</button>
+              </div>
+            </div>
+          </div>
+        );
       }return (
         <div className="min-h-screen bg-gray-900 text-white">
           <div className={`hidden md:flex fixed left-0 top-0 h-full bg-gray-800 ${sidebarOpen ? 'w-64' : 'w-20'} flex-col z-30`}>
