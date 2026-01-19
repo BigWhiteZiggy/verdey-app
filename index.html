@@ -44,7 +44,7 @@
         const file = e.target.files[0];
         if (!file) return;
         setUploadedImage(URL.createObjectURL(file));
-        const reader = new FileReader();
+        setVerificationResult(null);        const reader = new FileReader();
         reader.onloadend = async () => {
           try {
             const response = await fetch('https://verdey-backend.vercel.app/api/extract-bet-slip', {
